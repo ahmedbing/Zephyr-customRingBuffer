@@ -1,0 +1,9 @@
+tests:
+  RingBuffer.ring_buffer.unit:
+    platform_allow:
+      - native_sim
+    tags:
+      - ring_buffer
+      - unit
+    integration_platforms:
+      - native_sim
