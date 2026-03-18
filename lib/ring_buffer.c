@@ -62,6 +62,39 @@ ring_buffer_status_t ring_buffer_get(struct ring_buffer *rb, ring_buffer_data_t 
     return RING_BUFFER_SUCCESS;
 }
 
+ring_buffer_status_t ring_buffer_drain(struct ring_buffer *rb,
+                                       ring_buffer_data_t *out_buffer,
+                                       size_t out_capacity,
+                                       size_t *drained_count)
+{
+    if (!rb || !out_buffer || !drained_count) {
+        return RING_BUFFER_ERROR_INVALID_ARGUMENT;
+    }
+
+    if (rb->count == 0U) {
+        *drained_count = 0U;
+        return RING_BUFFER_ERROR_EMPTY;
+    }
+
+    if (out_capacity < rb->count) {
+        *drained_count = 0U;
+        return RING_BUFFER_ERROR_INVALID_CAPACITY;
+    }
+
+    size_t count_to_drain = rb->count;
+    for (size_t idx = 0U; idx < count_to_drain; ++idx) {
+        ring_buffer_status_t status = ring_buffer_get(rb, &out_buffer[idx]);
+        if (status != RING_BUFFER_SUCCESS) {
+            *drained_count = idx;
+            return status;
+        }
+    }
+
+    *drained_count = count_to_drain;
+
+    return RING_BUFFER_SUCCESS;
+}
+
 bool ring_buffer_is_empty(const struct ring_buffer *rb){
     if(!rb){
         return true;

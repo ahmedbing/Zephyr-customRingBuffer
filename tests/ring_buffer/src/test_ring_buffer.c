@@ -91,6 +91,91 @@ ZTEST(ring_buffer, test_get_one_element)
 }
 
 /**
+ * @brief Verify that drain succeeds and returns all elements in FIFO order.
+ *
+ * Expected behavior:
+ * - drain succeeds
+ * - drained_count matches stored element count
+ * - output buffer contains values in FIFO order
+ * - ring buffer becomes empty after drain
+ */
+ZTEST(ring_buffer, test_drain_success)
+{
+    struct ring_buffer rb;
+    ring_buffer_data_t storage[TEST_BUFFER_CAPACITY];
+    ring_buffer_data_t out_buffer[TEST_BUFFER_CAPACITY] = {0};
+    size_t drained_count = 0U;
+
+    zassert_equal(ring_buffer_init(&rb, storage, TEST_BUFFER_CAPACITY),
+                  RING_BUFFER_SUCCESS,
+                  "Initialization failed");
+
+    zassert_equal(ring_buffer_put(&rb, 10), RING_BUFFER_SUCCESS, NULL);
+    zassert_equal(ring_buffer_put(&rb, 20), RING_BUFFER_SUCCESS, NULL);
+    zassert_equal(ring_buffer_put(&rb, 30), RING_BUFFER_SUCCESS, NULL);
+
+    zassert_equal(ring_buffer_drain(&rb, out_buffer, TEST_BUFFER_CAPACITY, &drained_count),
+                                    RING_BUFFER_SUCCESS, "Drain should succeed");
+
+    zassert_equal(drained_count, 3U, "Drained count should match with size");
+    zassert_equal(out_buffer[0], 10, "First drained element should be 10");
+    zassert_equal(out_buffer[1], 20, "Second drained element should be 20");
+    zassert_equal(out_buffer[2], 30, "Third drained element should be 30");
+
+    zassert_true(ring_buffer_is_empty(&rb), "Buffer should be empty after drain");
+    zassert_equal(ring_buffer_get_size(&rb), 0U, "Buffer size should be zero after drain");
+}
+
+/**
+ * @brief Verify that drain fails with invalid arguments.
+ *
+ * Expected behavior:
+ * - drain returns RING_BUFFER_ERROR_INVALID_ARGUMENT
+ */
+ZTEST(ring_buffer, test_drain_fails_with_invalid_argument)
+{
+    ring_buffer_data_t out_buffer[TEST_BUFFER_CAPACITY];
+    size_t drained_count = 0U;
+
+zassert_equal(ring_buffer_drain(NULL, out_buffer, TEST_BUFFER_CAPACITY, &drained_count),
+                  RING_BUFFER_ERROR_INVALID_ARGUMENT,
+                  "Drain should fail with NULL ring buffer pointer");
+}
+
+/**
+ * @brief Verify that drain fails when output capacity is too small.
+ *
+ * Expected behavior:
+ * - drain returns RING_BUFFER_ERROR_INVALID_CAPACITY
+ * - drained_count is set to zero
+ * - ring buffer contents remain unchanged
+ */
+ZTEST(ring_buffer, test_drain_fails_with_invalid_capacity)
+{
+    struct ring_buffer rb;
+    ring_buffer_data_t storage[TEST_BUFFER_CAPACITY];
+    ring_buffer_data_t out_buffer[2];
+    size_t drained_count = 99U;
+
+    zassert_equal(ring_buffer_init(&rb, storage, TEST_BUFFER_CAPACITY),
+                  RING_BUFFER_SUCCESS,
+                  "Initialization failed");
+
+    zassert_equal(ring_buffer_put(&rb, 1), RING_BUFFER_SUCCESS, NULL);
+    zassert_equal(ring_buffer_put(&rb, 2), RING_BUFFER_SUCCESS, NULL);
+    zassert_equal(ring_buffer_put(&rb, 3), RING_BUFFER_SUCCESS, NULL);
+
+    zassert_equal(ring_buffer_drain(&rb, out_buffer, 2U, &drained_count),
+                  RING_BUFFER_ERROR_INVALID_CAPACITY,
+                  "Drain should fail when output capacity is too small");
+
+    zassert_equal(drained_count, 0U,
+                  "Drained count should be zero on invalid capacity");
+    zassert_equal(ring_buffer_get_size(&rb), 3U,
+                  "Buffer contents should remain unchanged after failed drain");
+}
+
+/**
  * @brief Verify that put fails when the buffer is full.
  *
  * Expected behavior:

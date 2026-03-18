@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: Apache-2.0
+
+mainmenu "RingBuffer"
+
+menu "RingBuffer application configuration"
+
+config APP_RING_BUFFER_CAPACITY
+    int "Ring buffer capacity"
+    default 10
+    range 1 256
+    help
+      Number of heart-rate samples stored in the ring buffer.
+
+config APP_PRODUCER_PERIOD_SECONDS
+    int "Producer period in seconds"
+    default 1
+    range 1 60
+    help
+      Interval between generated heart-rate samples.
+
+config APP_CONSUMER_PERIOD_SECONDS
+    int "Consumer period in seconds"
+    default 10
+    range 1 600
+    help
+      Interval between EMA calculations and reports.
+
+config APP_THREAD_STACK_SIZE
+    int "Application thread stack size"
+    default 1024
+    range 512 4096
+    help
+      Stack size used by producer and consumer threads.
+
+config APP_THREAD_PRIORITY
+    int "Application thread priority"
+    default 5
+    range -16 15
+    help
+      Zephyr priority used by the application threads.
+
+endmenu
+
+source "Kconfig.zephyr"
