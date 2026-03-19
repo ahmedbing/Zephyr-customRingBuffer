@@ -22,6 +22,9 @@ the ring buffer, and a consumer thread computes an Exponential Moving Average
 Prerequisites: Zephyr environment initialized, `west` installed, and a Zephyr
 SDK/toolchain available (for example via `ZEPHYR_BASE` and the usual Zephyr
 environment scripts).
+Tested on: 
+- SDK:               nRF Connect SDK v3.2.0
+- Toolchain:         nRF Connect SDK Toolchain v3.2.0
 
 Build and run on the native simulator:
 ```sh
