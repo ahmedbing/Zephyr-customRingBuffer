@@ -122,13 +122,15 @@ Functional requirements:
   over the latest buffered window.
 
 ## Improvements / Future Work
+- Add integration tests that run the producer/consumer threads together.
+- Create pipeline to check each commit with build checks/smoke tests 
 - Add a dedicated "overwrite oldest" mode argument in the ring buffer API so the policy
   does not live only in the implementation.
-- Threads can be moved to app_threads header/source files
-- Logger functions
+- Threads can be moved to app_threads header/source files.
+- Using arm dsp library IIR/biquad functions for optimized float calculation.
+- Logger functions in more detailed information at fault detections
 - Consider stricter error codes for `ring_buffer_init` to distinguish invalid
   arguments from other failures.
-- Add integration tests that run the producer/consumer threads together.
 - Implementation of lock-free ring buffer or Zephyr ring buffer alternatives for higher throughput.
 
 ## Tested Functionalities

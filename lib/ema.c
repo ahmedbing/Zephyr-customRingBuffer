@@ -1,4 +1,8 @@
+#include <zephyr/logging/log.h>
+
 #include "ema.h"
+
+LOG_MODULE_REGISTER(ema, LOG_LEVEL_INF);
 
 /*
  *   Static Functions
@@ -27,6 +31,7 @@ bool ema_calculation(const int * samples,
                      float * output_ema)
 {
     if ((samples == NULL) || (output_ema == NULL) || (sample_size == 0U)) {
+        LOG_ERR("EMA failed: invalid arguments");
         return false;
     }
     float alpha = alpha_from_count(sample_size);
@@ -37,5 +42,6 @@ bool ema_calculation(const int * samples,
         ema = (alpha * (float)samples[index]) + ((1.0f - alpha) * ema);
     }
     *output_ema = ema;
+    LOG_INF("EMA calculated for %zu samples", sample_size);
     return true;
 }

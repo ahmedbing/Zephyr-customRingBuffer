@@ -1,4 +1,8 @@
+#include <zephyr/logging/log.h>
+
 #include "ring_buffer.h"
+
+LOG_MODULE_REGISTER(ring_buffer, LOG_LEVEL_INF);
 
 /*
  *   Static Functions
@@ -16,6 +20,7 @@ ring_buffer_status_t ring_buffer_init( struct ring_buffer *rb,
                                        size_t capacity)
 {
     if (!rb || !storage || capacity == 0) {
+        LOG_ERR("Init failed: invalid arguments");
         return RING_BUFFER_ERROR_INIT_FAILED;
     }
     rb->buffer = storage;
@@ -23,6 +28,7 @@ ring_buffer_status_t ring_buffer_init( struct ring_buffer *rb,
     rb->head = 0;
     rb->tail = 0;
     rb->count = 0;
+    LOG_INF("Ring buffer initialized: capacity=%zu", capacity);
     return RING_BUFFER_SUCCESS;
 }
 
@@ -36,9 +42,11 @@ void ring_buffer_clear(struct ring_buffer *rb){
 
 ring_buffer_status_t ring_buffer_put(struct ring_buffer *rb, ring_buffer_data_t data){
     if (!rb) {
+        LOG_ERR("Put failed: rb is NULL");
         return RING_BUFFER_ERROR_INVALID_ARGUMENT;
     }
     if (rb->count == rb->capacity) {
+        LOG_ERR("Put failed: buffer is full");
         return RING_BUFFER_ERROR_FULL;
     }
 
@@ -50,9 +58,11 @@ ring_buffer_status_t ring_buffer_put(struct ring_buffer *rb, ring_buffer_data_t 
 
 ring_buffer_status_t ring_buffer_get(struct ring_buffer *rb, ring_buffer_data_t *data){
     if (!rb || !data) {
+        LOG_ERR("Get failed: invalid arguments");
         return RING_BUFFER_ERROR_INVALID_ARGUMENT;
     }
     if (rb->count == 0U) {
+        LOG_ERR("Get failed: buffer is empty");
         return RING_BUFFER_ERROR_EMPTY;
     }
 
@@ -68,16 +78,19 @@ ring_buffer_status_t ring_buffer_drain(struct ring_buffer *rb,
                                        size_t *drained_count)
 {
     if (!rb || !out_buffer || !drained_count) {
+        LOG_ERR("Drain failed: invalid arguments");
         return RING_BUFFER_ERROR_INVALID_ARGUMENT;
     }
 
     if (rb->count == 0U) {
         *drained_count = 0U;
+        LOG_ERR("Drain failed: buffer is empty");
         return RING_BUFFER_ERROR_EMPTY;
     }
 
     if (out_capacity < rb->count) {
         *drained_count = 0U;
+        LOG_ERR("Drain failed: output capacity too small");
         return RING_BUFFER_ERROR_INVALID_CAPACITY;
     }
 
