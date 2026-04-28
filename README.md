@@ -1,6 +1,9 @@
 # RingBuffer - Zephyr Ring Buffer + EMA
 
-[![CI](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/ci.yml/badge.svg)](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/ci.yml)
+[![build-and-tests](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/ci.yml/badge.svg)](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/ci.yml)
+
+[![twister](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/twister.yml/badge.svg)](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/twister.yml)
+
 
 ## Overview
 This project implements a circular buffer in C and uses it in a small Zephyr
