@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build app and run unit tests
+    runs-on: ubuntu-24.04
+
+    container:
+      image: ghcr.io/nrfconnect/sdk-nrf-toolchain:v3.2.0
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: app
+
+      - name: Install Python tooling and west
+        run: |
+          apt-get update
+          apt-get install -y python3-pip python3-venv
+
+          python3 -m venv .venv
+          . .venv/bin/activate
+
+          python3 -m pip install --upgrade pip
+          python3 -m pip install west
+
+          echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
+
+      - name: Initialize west workspace
+        run: |
+          export PATH="$GITHUB_WORKSPACE/.venv/bin:$PATH"
+          west --version
+          west init -l app
+          west update --narrow -o=--depth=1
+          west zephyr-export
+
+      - name: Install Python requirements
+        run: |
+          export PATH="$GITHUB_WORKSPACE/.venv/bin:$PATH"
+          python3 -m pip install --user -r zephyr/scripts/requirements.txt
+          python3 -m pip install --user -r nrf/scripts/requirements.txt
+
+      - name: Build Zephyr application (not running, since it will continue infinitely)
+        run: |
+          export PATH="$GITHUB_WORKSPACE/.venv/bin:$PATH"
+          west build -b native_sim -p always -d build/RingBuffer app
+
+      - name: Build and run ring buffer tests
+        run: |
+          export PATH="$GITHUB_WORKSPACE/.venv/bin:$PATH"
+          west build -b native_sim -p always -d build/ring_buffer app/tests/ring_buffer
+          ./build/ring_buffer/zephyr/zephyr.exe
+
+      - name: Build and run EMA tests
+        run: |
+          export PATH="$GITHUB_WORKSPACE/.venv/bin:$PATH"
+          west build -b native_sim/native/64 -p always -d build/ema app/tests/ema
+          ./build/ema/zephyr/zephyr.exe

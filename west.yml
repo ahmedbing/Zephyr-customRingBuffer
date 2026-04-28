@@ -1,0 +1,10 @@
+manifest:
+  projects:
+    - name: sdk-nrf
+      path: nrf
+      url: https://github.com/nrfconnect/sdk-nrf.git
+      revision: v3.2.0
+      import: true
+
+  self:
+    path: app
