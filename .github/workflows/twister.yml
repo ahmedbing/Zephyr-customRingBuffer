@@ -77,6 +77,100 @@ jobs:
             --outdir twister-out \
             --inline-logs
 
+      - name: Publish Twister summary
+        if: always()
+        shell: bash
+        run: |
+          export PATH="$GITHUB_WORKSPACE/.venv/bin:$PATH"
+
+          {
+            echo "## Zephyr Twister Test Summary"
+            echo ""
+            echo "- Test root: \`app/tests\`"
+            echo "- Platform: \`native_sim\`"
+            echo "- Output directory: \`twister-out\`"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ ! -f twister-out/twister.json ]; then
+            {
+              echo "❌ \`twister-out/twister.json\` was not created."
+              echo ""
+              echo "Twister probably failed before generating reports."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          python3 <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from collections import Counter
+
+          summary_file = Path(os.environ["GITHUB_STEP_SUMMARY"])
+          report_file = Path("twister-out/twister.json")
+
+          def esc(value):
+              if value is None:
+                  return ""
+              return str(value).replace("|", "\\|").replace("\n", " ").strip()
+
+          data = json.loads(report_file.read_text(encoding="utf-8"))
+          suites = data.get("testsuites", [])
+
+          counts = Counter(s.get("status", "unknown") for s in suites)
+          non_passed = [s for s in suites if s.get("status") != "passed"]
+
+          with summary_file.open("a", encoding="utf-8") as out:
+              out.write("### Result counts\n\n")
+              out.write("| Status | Count |\n")
+              out.write("|---|---:|\n")
+
+              if counts:
+                  for status, count in sorted(counts.items()):
+                      out.write(f"| {esc(status)} | {count} |\n")
+              else:
+                  out.write("| unknown | 0 |\n")
+
+              out.write("\n### Non-passed test suites\n\n")
+              out.write("| Status | Platform | Test suite | Reason |\n")
+              out.write("|---|---|---|---|\n")
+
+              if not non_passed:
+                  out.write("| passed | - | All test suites passed | - |\n")
+              else:
+                  for suite in non_passed[:50]:
+                      out.write(
+                          f"| {esc(suite.get('status'))} "
+                          f"| {esc(suite.get('platform'))} "
+                          f"| {esc(suite.get('name'))} "
+                          f"| {esc(suite.get('reason'))} |\n"
+                      )
+
+                  if len(non_passed) > 50:
+                      out.write(
+                          f"\nShowing first 50 of {len(non_passed)} non-passed suites. "
+                          "Download the artifact for full details.\n"
+                      )
+          PY
+
+          {
+            echo ""
+            echo "### Raw Twister report-summary"
+            echo ""
+            echo '```text'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          west twister \
+            -T app/tests \
+            -p native_sim \
+            --report-summary \
+            --outdir twister-out \
+            >> "$GITHUB_STEP_SUMMARY" 2>&1 || \
+            echo "west twister --report-summary failed, but the table above was generated from twister.json." >> "$GITHUB_STEP_SUMMARY"
+
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload Twister results
         uses: actions/upload-artifact@v4
         if: always()

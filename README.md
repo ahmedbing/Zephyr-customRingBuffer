@@ -4,6 +4,10 @@
 
 [![twister](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/twister.yml/badge.svg)](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/twister.yml)
 
+[![format-check](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/format-check.yml/badge.svg)](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/format-check.yml)
+
+[![cppcheck](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/cpp-check.yml/badge.svg)](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/cpp-check.yml)
+
 
 ## Overview
 This project implements a circular buffer in C and uses it in a small Zephyr
