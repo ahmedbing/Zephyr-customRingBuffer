@@ -94,3 +94,13 @@ jobs:
           export PATH="$GITHUB_WORKSPACE/.venv/bin:$PATH"
           west build -b native_sim/native/64 -p always -d build/ema app/tests/ema
           ./build/ema/ema/zephyr/zephyr.exe
+
+      - name: Upload build outputs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-outputs
+          path: |
+            build/RingBuffer/
+            build/ring_buffer/
+            build/ema/
