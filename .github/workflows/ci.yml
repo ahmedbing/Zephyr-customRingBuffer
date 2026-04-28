@@ -17,16 +17,35 @@ jobs:
     container:
       image: ghcr.io/nrfconnect/sdk-nrf-toolchain:v3.2.0
 
+    env:
+      ZEPHYR_TOOLCHAIN_VARIANT: host
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           path: app
 
-      - name: Install Python tooling and west
+      - name: Install host build tools, Python tooling, and west
         run: |
           apt-get update
-          apt-get install -y python3-pip python3-venv
+          apt-get install -y \
+            gcc-multilib \
+            g++-multilib \
+            libc6-dev-i386 \
+            python3-pip \
+            python3-venv \
+            cmake \
+            ninja-build \
+            gperf \
+            ccache \
+            device-tree-compiler \
+            wget \
+            xz-utils \
+            file \
+            make \
+            gcc \
+            g++
 
           python3 -m venv .venv
           . .venv/bin/activate
@@ -40,29 +59,38 @@ jobs:
         run: |
           export PATH="$GITHUB_WORKSPACE/.venv/bin:$PATH"
           west --version
+          cmake --version
+          ninja --version
           west init -l app
           west update --narrow -o=--depth=1
           west zephyr-export
 
       - name: Install Python requirements
         run: |
-          export PATH="$GITHUB_WORKSPACE/.venv/bin:$PATH"
-          python3 -m pip install --user -r zephyr/scripts/requirements.txt
-          python3 -m pip install --user -r nrf/scripts/requirements.txt
+          . "$GITHUB_WORKSPACE/.venv/bin/activate"
+
+          python3 -m pip install --upgrade pip
+          python3 -m pip install --no-cache-dir -r zephyr/scripts/requirements.txt
+          python3 -m pip install --no-cache-dir -r nrf/scripts/requirements.txt
 
       - name: Build Zephyr application (not running, since it will continue infinitely)
         run: |
           export PATH="$GITHUB_WORKSPACE/.venv/bin:$PATH"
+
+          echo "ZEPHYR_TOOLCHAIN_VARIANT=$ZEPHYR_TOOLCHAIN_VARIANT"
+          gcc --version
+          g++ --version
+
           west build -b native_sim -p always -d build/RingBuffer app
 
       - name: Build and run ring buffer tests
         run: |
           export PATH="$GITHUB_WORKSPACE/.venv/bin:$PATH"
           west build -b native_sim -p always -d build/ring_buffer app/tests/ring_buffer
-          ./build/ring_buffer/zephyr/zephyr.exe
+          ./build/ring_buffer/ring_buffer/zephyr/zephyr.exe
 
       - name: Build and run EMA tests
         run: |
           export PATH="$GITHUB_WORKSPACE/.venv/bin:$PATH"
           west build -b native_sim/native/64 -p always -d build/ema app/tests/ema
-          ./build/ema/zephyr/zephyr.exe
+          ./build/ema/ema/zephyr/zephyr.exe

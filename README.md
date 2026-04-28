@@ -1,5 +1,7 @@
 # RingBuffer - Zephyr Ring Buffer + EMA
 
+[![CI](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/ci.yml/badge.svg)](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/ci.yml)
+
 ## Overview
 This project implements a circular buffer in C and uses it in a small Zephyr
 application that simulates a wearable device. A random number generator acts as
