@@ -18,7 +18,9 @@ K_MUTEX_DEFINE(hr_buffer_mutex);
 /**
  * @brief Generate one simulated heart-rate sample in the range [44, 185].
  */
-static int generate_hr_sample(void) { return (int)(HR_MIN_VALUE + (sys_rand32_get() % HR_RANGE)); }
+static int generate_hr_sample(void) {
+    return (int)(HR_MIN_VALUE + (sys_rand32_get() % HR_RANGE));
+}
 
 /**
  * @brief Producer thread.
