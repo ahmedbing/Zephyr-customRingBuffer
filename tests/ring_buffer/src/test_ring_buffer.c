@@ -115,7 +115,7 @@ ZTEST(ring_buffer, test_drain_success)
     zassert_equal(ring_buffer_put(&rb, 30), RING_BUFFER_SUCCESS, NULL);
 
     zassert_equal(ring_buffer_drain(&rb, out_buffer, TEST_BUFFER_CAPACITY, &drained_count),
-                                    RING_BUFFER_SUCCESS, "Drain should succeed");
+                  RING_BUFFER_SUCCESS, "Drain should succeed");
 
     zassert_equal(drained_count, 3U, "Drained count should match with size");
     zassert_equal(out_buffer[0], 10, "First drained element should be 10");
@@ -137,7 +137,7 @@ ZTEST(ring_buffer, test_drain_fails_with_invalid_argument)
     ring_buffer_data_t out_buffer[TEST_BUFFER_CAPACITY];
     size_t drained_count = 0U;
 
-zassert_equal(ring_buffer_drain(NULL, out_buffer, TEST_BUFFER_CAPACITY, &drained_count),
+    zassert_equal(ring_buffer_drain(NULL, out_buffer, TEST_BUFFER_CAPACITY, &drained_count),
                   RING_BUFFER_ERROR_INVALID_ARGUMENT,
                   "Drain should fail with NULL ring buffer pointer");
 }

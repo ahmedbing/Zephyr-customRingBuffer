@@ -15,7 +15,8 @@ LOG_MODULE_REGISTER(ema, LOG_LEVEL_INF);
  */
 static float alpha_from_count(const size_t count)
 {
-    if (count == 0U) {
+    if (count == 0U)
+    {
         return 0.0f;
     }
 
@@ -26,18 +27,19 @@ static float alpha_from_count(const size_t count)
  * EMA API Implementation
  */
 
-bool ema_calculation(const int * samples,
+bool ema_calculation(const int *samples,
                      size_t sample_size,
-                     float * output_ema)
+                     float *output_ema)
 {
-    if ((samples == NULL) || (output_ema == NULL) || (sample_size == 0U)) {
+    if ((samples == NULL) || (output_ema == NULL) || (sample_size == 0U))
+    {
         LOG_ERR("EMA failed: invalid arguments");
         return false;
     }
     float alpha = alpha_from_count(sample_size);
     float ema = (float)samples[0];
-    
-    for(size_t index = 1U; index < sample_size; ++index)
+
+    for (size_t index = 1U; index < sample_size; ++index)
     {
         ema = (alpha * (float)samples[index]) + ((1.0f - alpha) * ema);
     }

@@ -7,7 +7,7 @@
 
 #define HR_MIN_VALUE 44
 #define HR_MAX_VALUE 185
-#define HR_RANGE     (HR_MAX_VALUE - HR_MIN_VALUE + 1)
+#define HR_RANGE (HR_MAX_VALUE - HR_MIN_VALUE + 1)
 
 static struct ring_buffer hr_ring_buffer;
 static ring_buffer_data_t hr_storage[CONFIG_APP_RING_BUFFER_CAPACITY];
@@ -36,14 +36,16 @@ static void producer_thread_cb(void *p1, void *p2, void *p3)
     ARG_UNUSED(p2);
     ARG_UNUSED(p3);
 
-    while (1) {
+    while (1)
+    {
         int sample = generate_hr_sample();
         ring_buffer_data_t dropped_sample;
         size_t current_size = 0U;
 
         k_mutex_lock(&hr_buffer_mutex, K_FOREVER);
 
-        if (ring_buffer_is_full(&hr_ring_buffer)) {
+        if (ring_buffer_is_full(&hr_ring_buffer))
+        {
             (void)ring_buffer_get(&hr_ring_buffer, &dropped_sample);
         }
 
@@ -77,7 +79,8 @@ static void consumer_thread_cb(void *p1, void *p2, void *p3)
     size_t sample_count = 0U;
     float ema = 0.0f;
 
-    while (1) {
+    while (1)
+    {
         k_sleep(K_SECONDS(CONFIG_APP_CONSUMER_PERIOD_SECONDS));
 
         k_mutex_lock(&hr_buffer_mutex, K_FOREVER);
@@ -87,17 +90,20 @@ static void consumer_thread_cb(void *p1, void *p2, void *p3)
                                                         &sample_count);
         k_mutex_unlock(&hr_buffer_mutex);
 
-        if (status == RING_BUFFER_ERROR_EMPTY) {
+        if (status == RING_BUFFER_ERROR_EMPTY)
+        {
             printk("Consumer: no samples available\n");
             continue;
         }
 
-        if (status != RING_BUFFER_SUCCESS) {
+        if (status != RING_BUFFER_SUCCESS)
+        {
             printk("Consumer: failed to fetch samples\n");
             continue;
         }
 
-        if (!ema_calculation(samples, sample_count, &ema)) {
+        if (!ema_calculation(samples, sample_count, &ema))
+        {
             printk("Consumer: EMA calculation failed\n");
             continue;
         }
@@ -138,7 +144,8 @@ int main(void)
                               hr_storage,
                               CONFIG_APP_RING_BUFFER_CAPACITY);
 
-    if (status != RING_BUFFER_SUCCESS) {
+    if (status != RING_BUFFER_SUCCESS)
+    {
         printk("Failed to initialize ring buffer\n");
         return -1;
     }
