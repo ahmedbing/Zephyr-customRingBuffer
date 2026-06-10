@@ -2,12 +2,12 @@
 #include <zephyr/random/random.h>
 #include <zephyr/sys/printk.h>
 
-#include "ring_buffer.h"
 #include "ema.h"
+#include "ring_buffer.h"
 
 #define HR_MIN_VALUE 44
 #define HR_MAX_VALUE 185
-#define HR_RANGE     (HR_MAX_VALUE - HR_MIN_VALUE + 1)
+#define HR_RANGE (HR_MAX_VALUE - HR_MIN_VALUE + 1)
 
 static struct ring_buffer hr_ring_buffer;
 static ring_buffer_data_t hr_storage[CONFIG_APP_RING_BUFFER_CAPACITY];
@@ -18,8 +18,7 @@ K_MUTEX_DEFINE(hr_buffer_mutex);
 /**
  * @brief Generate one simulated heart-rate sample in the range [44, 185].
  */
-static int generate_hr_sample(void)
-{
+static int generate_hr_sample(void) {
     return (int)(HR_MIN_VALUE + (sys_rand32_get() % HR_RANGE));
 }
 
@@ -30,8 +29,7 @@ static int generate_hr_sample(void)
  * ring buffer. When the buffer is full, the oldest sample is removed first so
  * the buffer always contains the latest window of data.
  */
-static void producer_thread_cb(void *p1, void *p2, void *p3)
-{
+static void producer_thread_cb(void *p1, void *p2, void *p3) {
     ARG_UNUSED(p1);
     ARG_UNUSED(p2);
     ARG_UNUSED(p3);
@@ -67,8 +65,7 @@ static void producer_thread_cb(void *p1, void *p2, void *p3)
  * The EMA calculation is done outside the mutex-protected section so the
  * shared buffer is locked only for the short copy operation.
  */
-static void consumer_thread_cb(void *p1, void *p2, void *p3)
-{
+static void consumer_thread_cb(void *p1, void *p2, void *p3) {
     ARG_UNUSED(p1);
     ARG_UNUSED(p2);
     ARG_UNUSED(p3);
@@ -81,10 +78,8 @@ static void consumer_thread_cb(void *p1, void *p2, void *p3)
         k_sleep(K_SECONDS(CONFIG_APP_CONSUMER_PERIOD_SECONDS));
 
         k_mutex_lock(&hr_buffer_mutex, K_FOREVER);
-        ring_buffer_status_t status = ring_buffer_drain(&hr_ring_buffer,
-                                                        samples,
-                                                        CONFIG_APP_RING_BUFFER_CAPACITY,
-                                                        &sample_count);
+        ring_buffer_status_t status = ring_buffer_drain(
+            &hr_ring_buffer, samples, CONFIG_APP_RING_BUFFER_CAPACITY, &sample_count);
         k_mutex_unlock(&hr_buffer_mutex);
 
         if (status == RING_BUFFER_ERROR_EMPTY) {
@@ -103,9 +98,7 @@ static void consumer_thread_cb(void *p1, void *p2, void *p3)
         }
 
         int ema_x100 = (int)(ema * 100.0f + 0.5f);
-        printk("Consumer: fetched=%zu, EMA=%d.%02d bpm\n",
-               sample_count,
-               ema_x100 / 100,
+        printk("Consumer: fetched=%zu, EMA=%d.%02d bpm\n", sample_count, ema_x100 / 100,
                ema_x100 % 100);
     }
 }
@@ -114,29 +107,16 @@ static void consumer_thread_cb(void *p1, void *p2, void *p3)
  * Statically create both threads.
  * Delay argument is 0, so both threads start immediately after boot.
  */
-K_THREAD_DEFINE(producer_tid,
-                CONFIG_APP_THREAD_STACK_SIZE,
-                producer_thread_cb,
-                NULL, NULL, NULL,
-                CONFIG_APP_THREAD_PRIORITY,
-                0,
-                0);
+K_THREAD_DEFINE(producer_tid, CONFIG_APP_THREAD_STACK_SIZE, producer_thread_cb, NULL, NULL, NULL,
+                CONFIG_APP_THREAD_PRIORITY, 0, 0);
 
-K_THREAD_DEFINE(consumer_tid,
-                CONFIG_APP_THREAD_STACK_SIZE,
-                consumer_thread_cb,
-                NULL, NULL, NULL,
-                CONFIG_APP_THREAD_PRIORITY,
-                0,
-                0);
+K_THREAD_DEFINE(consumer_tid, CONFIG_APP_THREAD_STACK_SIZE, consumer_thread_cb, NULL, NULL, NULL,
+                CONFIG_APP_THREAD_PRIORITY, 0, 0);
 
-int main(void)
-{
+int main(void) {
     ring_buffer_status_t status;
 
-    status = ring_buffer_init(&hr_ring_buffer,
-                              hr_storage,
-                              CONFIG_APP_RING_BUFFER_CAPACITY);
+    status = ring_buffer_init(&hr_ring_buffer, hr_storage, CONFIG_APP_RING_BUFFER_CAPACITY);
 
     if (status != RING_BUFFER_SUCCESS) {
         printk("Failed to initialize ring buffer\n");

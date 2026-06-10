@@ -38,9 +38,8 @@ struct ring_buffer {
  *
  * @return RING_BUFFER_STATUS_OK on success, otherwise an error status.
  */
-ring_buffer_status_t ring_buffer_init(struct ring_buffer *rb,
-                                            ring_buffer_data_t *storage,
-                                            size_t capacity);
+ring_buffer_status_t ring_buffer_init(struct ring_buffer *rb, ring_buffer_data_t *storage,
+                                      size_t capacity);
 
 /**
  * @brief Clear all contents of the ring buffer.
@@ -63,8 +62,7 @@ void ring_buffer_clear(struct ring_buffer *rb);
  * @return RING_BUFFER_STATUS_OK on success, otherwise an error status
  *         such as full buffer or invalid argument.
  */
-ring_buffer_status_t ring_buffer_put(struct ring_buffer *rb,
-                                           ring_buffer_data_t data);
+ring_buffer_status_t ring_buffer_put(struct ring_buffer *rb, ring_buffer_data_t data);
 
 /**
  * @brief Remove one element from the ring buffer.
@@ -78,8 +76,7 @@ ring_buffer_status_t ring_buffer_put(struct ring_buffer *rb,
  * @return RING_BUFFER_STATUS_OK on success, otherwise an error status
  *         such as empty buffer or invalid argument.
  */
-ring_buffer_status_t ring_buffer_get(struct ring_buffer *rb,
-                                           ring_buffer_data_t *data);
+ring_buffer_status_t ring_buffer_get(struct ring_buffer *rb, ring_buffer_data_t *data);
 
 /**
  * @brief Remove and return all currently stored elements in FIFO order.
@@ -95,10 +92,8 @@ ring_buffer_status_t ring_buffer_get(struct ring_buffer *rb,
  * @return RING_BUFFER_SUCCESS on success, otherwise an error status such as
  *         empty buffer or invalid argument.
  */
-ring_buffer_status_t ring_buffer_drain(struct ring_buffer *rb,
-                                       ring_buffer_data_t *out_buffer,
-                                       size_t out_capacity,
-                                       size_t *drained_count);
+ring_buffer_status_t ring_buffer_drain(struct ring_buffer *rb, ring_buffer_data_t *out_buffer,
+                                       size_t out_capacity, size_t *drained_count);
 
 /**
  * @brief Check whether the ring buffer is empty.

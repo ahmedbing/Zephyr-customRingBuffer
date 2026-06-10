@@ -24,9 +24,7 @@ extern "C" {
  *
  * @return true if the EMA was calculated successfully, otherwise false.
  */
-bool ema_calculation(const int *samples,
-                     size_t sample_size,
-                     float *output_ema);
+bool ema_calculation(const int *samples, size_t sample_size, float *output_ema);
 
 #ifdef __cplusplus
 }
