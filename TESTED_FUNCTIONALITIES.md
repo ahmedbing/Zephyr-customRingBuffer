@@ -26,3 +26,18 @@ This file lists the unit-tested behaviors covered by the ZTest suites.
 - Known sequence EMA matches expected result.
 - Constant sequence EMA remains constant.
 - Mixed signed sequence EMA behaves correctly.
+
+## Smoke integration test (`.github/workflows/smoke-test.yml`)
+- Builds and runs the real Zephyr application on `native_sim` in GitHub Actions.
+- Runs producer and consumer threads together for a sustained smoke duration.
+- Uses `ci/smoke.conf` to keep the ring buffer small and make the producer run
+  faster than the consumer.
+- Validates the end-to-end application path:
+  `producer -> ring buffer -> overflow/drop oldest -> consumer -> EMA -> logs`.
+- Confirms that the application starts, producer samples are generated, buffer
+  overflow/drop handling is exercised, samples are consumed, and EMA output is
+  printed.
+- Saves full smoke logs and validation counts as GitHub Actions artifacts.
+
+Detailed FIFO behavior, wraparound behavior, API error handling, and exact EMA
+math are covered by the unit tests above.

@@ -43,6 +43,7 @@ static void producer_thread_cb(void *p1, void *p2, void *p3) {
 
         if (ring_buffer_is_full(&hr_ring_buffer)) {
             (void)ring_buffer_get(&hr_ring_buffer, &dropped_sample);
+            printk("Producer: buffer full, dropped oldest sample=%d bpm\n", dropped_sample);
         }
 
         (void)ring_buffer_put(&hr_ring_buffer, (ring_buffer_data_t)sample);
@@ -105,13 +106,14 @@ static void consumer_thread_cb(void *p1, void *p2, void *p3) {
 
 /*
  * Statically create both threads.
- * Delay argument is 0, so both threads start immediately after boot.
+ * Startup delays give main() time to initialize the shared ring buffer before
+ * producer and consumer begin their periodic work.
  */
 K_THREAD_DEFINE(producer_tid, CONFIG_APP_THREAD_STACK_SIZE, producer_thread_cb, NULL, NULL, NULL,
-                CONFIG_APP_THREAD_PRIORITY, 0, 0);
+                CONFIG_APP_THREAD_PRIORITY, 0, CONFIG_APP_PRODUCER_START_DELAY_MS);
 
 K_THREAD_DEFINE(consumer_tid, CONFIG_APP_THREAD_STACK_SIZE, consumer_thread_cb, NULL, NULL, NULL,
-                CONFIG_APP_THREAD_PRIORITY, 0, 0);
+                CONFIG_APP_THREAD_PRIORITY, 0, CONFIG_APP_CONSUMER_START_DELAY_MS);
 
 int main(void) {
     ring_buffer_status_t status;

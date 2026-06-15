@@ -1,11 +1,9 @@
 # RingBuffer - Zephyr Ring Buffer + EMA
 
 [![build-and-tests](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/ci.yml/badge.svg)](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/ci.yml)
-
 [![twister](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/twister.yml/badge.svg)](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/twister.yml)
-
-[![format-check](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/format-check.yml/badge.svg)](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/format-check.yml)
-
+[![smoke-test](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/smoke-test.yml/badge.svg)](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/smoke-test.yml)
+[![clang-format](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/format-check.yml/badge.svg)](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/format-check.yml)
 [![cppcheck](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/cpp-check.yml/badge.svg)](https://github.com/ahmedbing/Zephyr-customRingBuffer/actions/workflows/cpp-check.yml)
 
 
@@ -24,6 +22,8 @@ the ring buffer, and a consumer thread computes an Exponential Moving Average
 - `src/main.c` - Zephyr application (producer + consumer threads).
 - `tests/ring_buffer/` - Ring buffer ZTest unit tests.
 - `tests/ema/` - EMA ZTest unit tests.
+- `ci/smoke.conf` - CI smoke-test configuration that forces producer/consumer
+  overflow behavior.
 - `Kconfig` - Application configuration options.
 - `prj.conf` - Default build configuration.
 
@@ -31,7 +31,7 @@ the ring buffer, and a consumer thread computes an Exponential Moving Average
 Prerequisites: Zephyr environment initialized, `west` installed, and a Zephyr
 SDK/toolchain available (for example via `ZEPHYR_BASE` and the usual Zephyr
 environment scripts).
-Tested on: 
+Tested on:
 - SDK:               nRF Connect SDK v3.2.0
 - Toolchain:         nRF Connect SDK Toolchain v3.2.0
 
@@ -55,6 +55,23 @@ west build -b native_sim/native/64 -p always tests/ema
 ```
 
 For a full list of tested functionalities, see `TESTED_FUNCTIONALITIES.md`.
+
+## Smoke Test
+The `smoke-test` GitHub Actions workflow builds the real Zephyr application in
+the nRF Connect SDK container and runs it on `native_sim` for 120 seconds.
+
+The smoke configuration uses a ring buffer capacity of 4, a 1-second producer
+period, and a 5-second consumer period. This intentionally makes the producer
+generate more samples than the buffer can hold before each consumer drain, so
+the workflow validates the integrated path:
+
+```text
+producer -> ring buffer -> overflow/drop oldest -> consumer -> EMA -> logs
+```
+
+The workflow fails if startup, producer, overflow/drop, consumer, or EMA logs
+are missing. It uploads the full simulator log, validation summary, and build
+metadata as GitHub Actions artifacts.
 
 ## API Usage Examples
 Ring buffer:
@@ -113,6 +130,9 @@ Functional requirements:
    buffer (`src/main.c`).
 4. Consumer Thread: Every 10 seconds, drain all samples in the buffer and
    calculate the EMA (`src/main.c` and `lib/ema.c`).
+5. Smoke Integration Test: Run the real producer and consumer threads together
+   in CI, force ring buffer overflow/drop behavior, and validate the resulting
+   producer, consumer, and EMA logs.
 
 ## Accepted Design Decisions
 - The ring buffer uses caller-provided storage to avoid dynamic allocation in
@@ -134,9 +154,9 @@ Functional requirements:
   over the latest buffered window.
 
 ## Improvements / Future Work
-- [ ] Add integration tests that run the producer/consumer threads together.
+- [x] Add integration tests that run the producer/consumer threads together.
 - [x] Create pipeline to check each commit with build checks
-- [ ] Add smoke tests to CI
+- [x] Add smoke tests to CI
 - [ ] Add a dedicated "overwrite oldest" mode argument in the ring buffer API so the policy
   does not live only in the implementation.
 - [ ] Threads can be moved to app_threads header/source files.
