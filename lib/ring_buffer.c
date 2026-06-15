@@ -39,7 +39,7 @@ void ring_buffer_clear(struct ring_buffer *rb) {
 
 ring_buffer_status_t ring_buffer_put(struct ring_buffer *rb, ring_buffer_data_t data) {
     if (!rb) {
-        LOG_ERR("Put failed: rb is NULL");
+        LOG_ERR("Put failed: ring buffer is NULL");
         return RING_BUFFER_ERROR_INVALID_ARGUMENT;
     }
     if (rb->count == rb->capacity) {

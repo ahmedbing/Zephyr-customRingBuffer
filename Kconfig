@@ -18,12 +18,26 @@ config APP_PRODUCER_PERIOD_SECONDS
     help
       Interval between generated heart-rate samples.
 
+config APP_PRODUCER_START_DELAY_MS
+    int "Producer thread startup delay in milliseconds"
+    default 100
+    range 0 1000
+    help
+      Delay before the producer thread starts generating samples in initialization.
+
 config APP_CONSUMER_PERIOD_SECONDS
     int "Consumer period in seconds"
     default 10
     range 1 600
     help
       Interval between EMA calculations and reports.
+
+config APP_CONSUMER_START_DELAY_MS
+    int "Consumer thread startup delay in milliseconds"
+    default 200
+    range 0 1000
+    help
+      Delay before the consumer thread starts generating samples in initialization.
 
 config APP_THREAD_STACK_SIZE
     int "Application thread stack size"
